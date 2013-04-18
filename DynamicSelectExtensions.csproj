@@ -40,8 +40,8 @@
     <Compile Include="IQueryableExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="THANKS" />
-    <None Include="README" />
+    <None Include="THANKS.markdown" />
+    <None Include="README.markdown" />
     <Content Include="thiscode.ico" />
   </ItemGroup>
   <ItemGroup>
