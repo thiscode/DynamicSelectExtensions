@@ -48,7 +48,7 @@ You can do this:
 The List inside the Select-Method could you, of course, built
 previously dynamic.
 
-You will get back an IQueryable<dynamic> object. This is the reason
+You will get back an IQueryable&lt;dynamic&gt; object. This is the reason
 why intellisense will not show you all members of the retrieved
 entities. But you can access nevertheless the members:
 
