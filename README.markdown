@@ -1,4 +1,4 @@
-﻿These extensions solve some problems using IQueryable:
+These extensions solve some problems using IQueryable:
 
 1. Built dynamic a select (projection) statement, with only specific fields, defined at runtime
 2. Include related entities in Entity Framework with specific conditions (filter, orders or limits) in eager loading
@@ -33,7 +33,7 @@ The Solution:
 
 After adding a reference to this assembly and add an
 
- using thiscode.Tools.DynamicSelectExtensions
+	using thiscode.Tools.DynamicSelectExtensions
 
 You can do this:
 
@@ -76,7 +76,7 @@ The Solution:
 
 After adding a reference to this assembly and add an
 
- using thiscode.Tools.DynamicSelectExtensions
+	using thiscode.Tools.DynamicSelectExtensions
 
 You can do this:
 
@@ -96,6 +96,9 @@ You can do this:
 		x => x.CollectionWithRelations.SelectMany(x => x.EntityCollectionOnSecondLevel.OrderBy(y => y.Something).ThenBy(y => y.SomeOtherThing)),
 
 	});
+
+The List inside the Select-Method could you, of course, built
+previously dynamic.
 
 You have to pay attention, that this call will use an AsEnumerable() in your
 query chain. This means, your database will be queried after you request
