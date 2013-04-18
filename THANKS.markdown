@@ -10,7 +10,7 @@ Ladislav Mrnka, for understanding basics of "Include" and why i cannot use it fo
 * http://stackoverflow.com/questions/6700332/entity-framework-include-with-condition/6704361#6704361
 * http://stackoverflow.com/questions/8333934/entity-framework-selective-condition-on-included-navigation-property/8338558#8338558
 
-Thomas Levesque and Ethan J. Brown, for explaning basics of expression tree creation and dynamic type building:
+Thomas Levesque and Ethan J. Brown, for explaining basics of expression tree creation and dynamic type building:
 * http://stackoverflow.com/questions/606104/how-to-create-linq-expression-tree-with-anonymous-type-in-it/723018#723018
 * http://stackoverflow.com/questions/2928757/using-linq-to-map-dynamically-or-construct-projections/2929287#2929287
 
