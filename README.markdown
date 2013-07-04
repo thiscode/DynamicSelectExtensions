@@ -45,9 +45,6 @@ You can do this:
 
 	));
 
-The List inside the Select-Method could you, of course, built
-previously dynamic.
-
 You will get back an IQueryable&lt;dynamic&gt; object. This is the reason
 why intellisense will not show you all members of the retrieved
 entities. But you can access nevertheless the members:
@@ -96,9 +93,6 @@ You can do this:
 		x => x.CollectionWithRelations.SelectMany(x => x.EntityCollectionOnSecondLevel.OrderBy(y => y.Something).ThenBy(y => y.SomeOtherThing)),
 
 	});
-
-The List inside the Select-Method could you, of course, built
-previously dynamic.
 
 You have to pay attention, that this call will use an AsEnumerable() in your
 query chain. This means, your database will be queried after you request
