@@ -1,6 +1,6 @@
 These extensions solve some problems using IQueryable:
 
-1. Built dynamic a select (projection) statement, with only specific fields, defined at runtime
+1. Build a dynamic select statement (projection), with only specific fields, defined at runtime
 2. Include related entities in Entity Framework with specific conditions (filter, orders or limits) in eager loading
 3. Include related entities in Entity Framework defined at runtime
 
