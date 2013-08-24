@@ -77,7 +77,7 @@ After adding a reference to this assembly and add an
 
 You can do this:
 
-	var query = query.SelectIncluding( new List<Expression<Func<T,object>>>>(){
+	var query = query.SelectIncluding( new List<Expression<Func<T,object>>>(){
 
 		//Example how to retrieve only the newest history entry
 		x => x.HistoryEntries.OrderByDescending(x => x.Timestamp).Take(1),
