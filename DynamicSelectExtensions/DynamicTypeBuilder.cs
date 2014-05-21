@@ -11,7 +11,6 @@ using System.Threading;
 
 namespace thiscode.Tools.DynamicSelectExtensions
 {
-
     //Thanks to Ethan J. Brown:
     //  http://stackoverflow.com/questions/606104/how-to-create-linq-expression-tree-with-anonymous-type-in-it/723018#723018
 
@@ -53,9 +52,27 @@ namespace thiscode.Tools.DynamicSelectExtensions
                 TypeBuilder typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Serializable, null, Type.EmptyTypes);
 
                 foreach (var field in fields)
-                    typeBuilder.DefineField(field.Key, field.Value, FieldAttributes.Public);
+                {
+                    var fieldField = typeBuilder.DefineField("_" + field.Key, field.Value, FieldAttributes.Private);
+                    var fieldProperty = typeBuilder.DefineProperty(field.Key, PropertyAttributes.HasDefault, field.Value, null);
 
-                builtTypes[typeKey] = new Tuple<string,Type>(typeName, typeBuilder.CreateType());
+                    var getter = typeBuilder.DefineMethod("get_" + field.Key, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, field.Value, Type.EmptyTypes);
+                    var getterIL = getter.GetILGenerator();
+                    getterIL.Emit(OpCodes.Ldarg_0);
+                    getterIL.Emit(OpCodes.Ldfld, fieldField);
+                    getterIL.Emit(OpCodes.Ret);
+
+                    var setter = typeBuilder.DefineMethod("set_" + field.Key, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, null, new[] { field.Value });
+                    var setterIL = setter.GetILGenerator();
+                    setterIL.Emit(OpCodes.Ldarg_0);
+                    setterIL.Emit(OpCodes.Ldarg_1);
+                    setterIL.Emit(OpCodes.Stfld, fieldField);
+                    setterIL.Emit(OpCodes.Ret);
+
+                    fieldProperty.SetGetMethod(getter);
+                    fieldProperty.SetSetMethod(setter);
+                }
+                builtTypes[typeKey] = new Tuple<string, Type>(typeName, typeBuilder.CreateType());
 
                 return builtTypes[typeKey].Item2;
             }
@@ -67,8 +84,6 @@ namespace thiscode.Tools.DynamicSelectExtensions
             {
                 Monitor.Exit(builtTypes);
             }
-
         }
-
     }
 }
