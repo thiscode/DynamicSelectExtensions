@@ -9,10 +9,8 @@ using System.Linq.Expressions;
 
 namespace thiscode.Tools.DynamicSelectExtensions
 {
-
     public static class IQueryableExtensions
     {
-
         /// <summary>
         /// Use this to select only specific fields, instead fetching the whole entity.
         /// </summary>
@@ -23,7 +21,7 @@ namespace thiscode.Tools.DynamicSelectExtensions
         ///         "Property1",
         ///         "Property2",
         ///     });
-        ///     
+        ///
         /// dynamic FirstObj = query.FirstOrDefault();
         /// Console.WriteLine(FirstObj.Property1); //Name of the member will validated in runtime!
         /// </code></example>
@@ -31,7 +29,7 @@ namespace thiscode.Tools.DynamicSelectExtensions
         /// <param name="source">Source IQueryable</param>
         /// <param name="propertyNames">List of Property-Names you want to Select</param>
         /// <returns>A dynamic IQueryable Object. The object includes all Property-Names you have given as Fields.</returns>
-        public static IQueryable<dynamic> SelectPartially<T>(this IQueryable<T> source, IEnumerable<string> propertyNames)
+        public static IQueryable<dynamic> SelectPartially<T>(this IQueryable<T> source, IEnumerable<String> propertyNames)
         {
             if (source == null) throw new ArgumentNullException("Source Object is NULL");
 
@@ -58,13 +56,37 @@ namespace thiscode.Tools.DynamicSelectExtensions
             var dynamicType = DynamicTypeBuilder.GetDynamicType(sourceProperties.Values.ToDictionary(f => f.Name, f => f.PropertyType), typeof(object), Type.EmptyTypes);
 
             //Create the Binding Expressions
-            var bindings = dynamicType.GetFields().Select(p => Expression.Bind(p, Expression.Property(sourceItem, sourceProperties[p.Name]))).OfType<MemberBinding>().ToList();
+            var bindings = dynamicType.GetProperties().Where(p => p.CanWrite)
+                .Select(p => Expression.Bind(p, Expression.Property(sourceItem, sourceProperties[p.Name]))).OfType<MemberBinding>().ToList();
 
             //Create the Projection
             var selector = Expression.Lambda<Func<T, dynamic>>(Expression.MemberInit(Expression.New(dynamicType.GetConstructor(Type.EmptyTypes)), bindings), sourceItem);
 
             //Now Select and return the IQueryable object
             return source.Select(selector);
+        }
+        public static dynamic ToPartial<T>(this T obj, IEnumerable<String> propertyNames)
+        {
+            var objType = typeof(T);
+
+
+            //Prepare ParameterExpression refering to the source object
+            var sourceItem = Expression.Parameter(objType, "t");
+
+            //Get PropertyInfos from Source Object (Filter all Misspelled Property-Names)
+            var sourceProperties = propertyNames.Where(name => objType.GetProperty(name) != null).ToDictionary(name => name, name => objType.GetProperty(name));
+
+            //Build dynamic a Class that includes the Fields (no inheritance, no interfaces)
+            var dynamicType = DynamicTypeBuilder.GetDynamicType(sourceProperties.Values.ToDictionary(f => f.Name, f => f.PropertyType), typeof(object), Type.EmptyTypes);
+
+            //Create the Binding Expressions
+            var bindings = dynamicType.GetProperties().Where(p => p.CanWrite)
+                .Select(p => Expression.Bind(p, Expression.Property(sourceItem, sourceProperties[p.Name]))).OfType<MemberBinding>().ToList();
+
+            //Create the Projection
+            var selector = Expression.Lambda<Func<T, dynamic>>(Expression.MemberInit(Expression.New(dynamicType.GetConstructor(Type.EmptyTypes)), bindings), sourceItem);
+
+            return selector.Compile().Invoke(obj);
         }
 
         /// <summary>
@@ -83,7 +105,7 @@ namespace thiscode.Tools.DynamicSelectExtensions
         /// <param name="source">Source IQueryable</param>
         /// <param name="includeExpessions">Lamda Expressions, defining what entities to include</param>
         /// <returns></returns>
-        public static IEnumerable<T> SelectIncluding<T>(this IQueryable<T> source, IEnumerable<Expression<Func<T,object>>> includeExpessions)
+        public static IEnumerable<T> SelectIncluding<T>(this IQueryable<T> source, IEnumerable<Expression<Func<T, object>>> includeExpessions)
         {
             if (source == null) throw new ArgumentNullException("Source Object is NULL");
 
@@ -115,15 +137,15 @@ namespace thiscode.Tools.DynamicSelectExtensions
             //
             //    });
 
-            //Now we fire up the query (AsEnumerable) and then unwrap the SupplierItem out 
-            //of the anonymous type (Select). 
-            
+            //Now we fire up the query (AsEnumerable) and then unwrap the SupplierItem out
+            //of the anonymous type (Select).
+
             //return query.AsEnumerable().Select(mainEntity => mainEntity.mainEntity);
 
-            //Because the ObjectContext have collected all the related entities, it have also linked each other correctly over 
+            //Because the ObjectContext have collected all the related entities, it have also linked each other correctly over
             //navigation-properties and reference-properties. Please read this Tip, too:
             //http://blogs.msdn.com/b/alexj/archive/2009/10/13/tip-37-how-to-do-a-conditional-include.aspx
-            
+
             //We build here firstly the Expression needed by the Select-Method dynamicly.
             //Beyond this we build even the class dynamicly. The class includes only
             //the Properties we want to project. The difference is, that the class is
@@ -166,7 +188,7 @@ namespace thiscode.Tools.DynamicSelectExtensions
                 typeDetected = includeExpession.Body.Type;
                 //Save into List
                 dynamicFields.Add("f" + dynamicFieldsCounter, new Tuple<Expression, Type>(
-                    paramRewriter.ReplaceParameter(includeExpession.Body,includeExpession.Parameters[0]),
+                    paramRewriter.ReplaceParameter(includeExpession.Body, includeExpession.Parameters[0]),
                     typeDetected
                     ));
                 //Count
@@ -214,8 +236,7 @@ namespace thiscode.Tools.DynamicSelectExtensions
                 else return node;
             }
         }
-
     }
-
 }
+
                               
