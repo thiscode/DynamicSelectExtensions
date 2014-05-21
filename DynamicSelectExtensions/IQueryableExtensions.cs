@@ -29,7 +29,7 @@ namespace thiscode.Tools.DynamicSelectExtensions
         /// <param name="source">Source IQueryable</param>
         /// <param name="propertyNames">List of Property-Names you want to Select</param>
         /// <returns>A dynamic IQueryable Object. The object includes all Property-Names you have given as Fields.</returns>
-        public static IQueryable<dynamic> SelectPartially<T>(this IQueryable<T> source, IEnumerable<string> propertyNames)
+        public static IQueryable<dynamic> SelectPartially<T>(this IQueryable<T> source, IEnumerable<String> propertyNames)
         {
             if (source == null) throw new ArgumentNullException("Source Object is NULL");
 
@@ -64,6 +64,29 @@ namespace thiscode.Tools.DynamicSelectExtensions
 
             //Now Select and return the IQueryable object
             return source.Select(selector);
+        }
+        public static dynamic ToPartial<T>(this T obj, IEnumerable<String> propertyNames)
+        {
+            var objType = typeof(T);
+
+
+            //Prepare ParameterExpression refering to the source object
+            var sourceItem = Expression.Parameter(objType, "t");
+
+            //Get PropertyInfos from Source Object (Filter all Misspelled Property-Names)
+            var sourceProperties = propertyNames.Where(name => objType.GetProperty(name) != null).ToDictionary(name => name, name => objType.GetProperty(name));
+
+            //Build dynamic a Class that includes the Fields (no inheritance, no interfaces)
+            var dynamicType = DynamicTypeBuilder.GetDynamicType(sourceProperties.Values.ToDictionary(f => f.Name, f => f.PropertyType), typeof(object), Type.EmptyTypes);
+
+            //Create the Binding Expressions
+            var bindings = dynamicType.GetProperties().Where(p => p.CanWrite)
+                .Select(p => Expression.Bind(p, Expression.Property(sourceItem, sourceProperties[p.Name]))).OfType<MemberBinding>().ToList();
+
+            //Create the Projection
+            var selector = Expression.Lambda<Func<T, dynamic>>(Expression.MemberInit(Expression.New(dynamicType.GetConstructor(Type.EmptyTypes)), bindings), sourceItem);
+
+            return selector.Compile().Invoke(obj);
         }
 
         /// <summary>
